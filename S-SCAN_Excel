@@ -1,0 +1,246 @@
+
+Sub OrdenarNumeros()
+    Dim hoja As Worksheet
+    Dim rangoOrigen As Range
+    Dim rangoDestino As Range
+    Dim celda As Range
+    Dim ultimaFila As Long
+    Dim i As Integer
+    Dim indiceColumna As Integer
+    Dim valores() As Variant
+    Dim limite As Variant
+    Dim incluirLimite As Boolean
+    
+    ' Definir la hoja de trabajo (cambia "Hoja1" al nombre de tu hoja)
+    Set hoja = ThisWorkbook.Sheets("Hoja1")
+    
+    ' Obtener el límite para el ordenamiento de la columna A desde la celda B3
+    limite = hoja.Range("B3").Value
+    incluirLimite = False
+    
+    ' Determinar la última fila en la columna A
+    ultimaFila = hoja.Cells(hoja.Rows.Count, "A").End(xlUp).Row
+    
+    ' Verificar si hay datos en la columna A desde la fila 2 hacia abajo
+    If ultimaFila >= 2 Then
+        ' Definir el rango de origen (columna A desde la fila 2 hasta la última fila)
+        Set rangoOrigen = hoja.Range("A2:A" & ultimaFila)
+        
+        ' Contar la cantidad de valores válidos en la columna A
+        Dim numValores As Integer
+        numValores = Application.WorksheetFunction.CountIf(rangoOrigen, "<=" & limite)
+        
+        ' Inicializar el índice de la matriz de valores
+        i = 1
+        
+        
+        
+        
+            ' Obtener el valor de B2 para buscar el valor más cercano en el ordenamiento
+    Dim valorB2 As Variant
+    valorB2 = hoja.Range("B2").Value
+        
+        
+        ' Redimensionar el arreglo para almacenar los valores
+        ReDim valores(1 To numValores, 1 To 1)
+        
+        
+        
+        ' Recorrer cada celda en el rango de origen y verificar si debe ser incluida en el arreglo
+        For Each celda In rangoOrigen
+            If IsNumeric(celda.Value) And celda.Value <= limite Then
+                If celda.Value = limite Then
+                    incluirLimite = True
+                End If
+                valores(i, 1) = celda.Value
+                i = i + 1
+            End If
+        Next celda
+        
+
+        ' Ordenar el arreglo de forma ascendente
+        If numValores > 1 Then
+            Call QuickSort(valores, LBound(valores, 1), UBound(valores, 1))
+        End If
+        
+        ' Escribir los valores ordenados en las celdas de destino (comenzando desde C7)
+        indiceColumna = 3
+        For i = LBound(valores, 1) To UBound(valores, 1)
+            Set rangoDestino = hoja.Cells(7, indiceColumna)
+            rangoDestino.Value = valores(i, 1)
+            ' Pintar celda de color gris debajo de "HEAD"
+            If valores(i, 1) = "HEAD" Then
+                rangoDestino.Offset(1, 0).Interior.Color = RGB(192, 192, 192) ' Color gris
+            End If
+            indiceColumna = indiceColumna + 1 ' Incrementar el índice de columna
+        Next i
+    Else
+        MsgBox "No hay datos para ordenar en la columna A a partir de la fila 2.", vbExclamation
+    End If
+    
+        ' Calcular la diferencia entre el último valor y el valor de A2
+    Dim Recorrido1 As Integer
+    Recorrido1 = valores(UBound(valores, 1), 1) - hoja.Range("A2").Value
+    
+    ' Calcular la diferencia entre el último valor y el primer valor después de "HEAD"
+    Dim Recorrido2 As Integer
+    Dim indiceHEAD As Integer
+    For i = LBound(valores, 1) To UBound(valores, 1)
+        If valores(i, 1) = "HEAD" Then
+            indiceHEAD = i
+            Exit For
+        End If
+    Next i
+    Recorrido2 = valores(UBound(valores, 1), 1) - valores(indiceHEAD + 1, 1)
+    
+
+
+'Calcular Recorrido3
+Dim Recorrido3 As Integer
+Recorrido3 = Recorrido2 - Recorrido1 - 10
+    
+
+    ' Asignar los valores de Recorrido1 y Recorrido2 a las celdas C10 y C11 respectivamente
+    hoja.Range("C15").Value = Recorrido1
+    hoja.Range("C16").Value = Recorrido2
+    hoja.Range("C17").Value = Recorrido3
+    
+    'Calcular TOTAL DE SEEK TIME
+    Dim Tseektime As Integer
+    Tseektime = Recorrido1 + Recorrido2 + Recorrido3
+    hoja.Range("D2").Value = Tseektime
+    
+    
+    
+    'Calcular la longitud media de busqueda
+    Dim Lmbusqueda As Integer
+    Lmbusqueda = Tseektime / 9
+    hoja.Range("F2").Value = Lmbusqueda
+    
+    
+End Sub
+
+Sub FormatearCeldasAZUL()
+    Dim hoja As Worksheet
+    Dim rangoCeldas As Range
+    
+    ' Definir la hoja de trabajo (cambia "Hoja1" al nombre de tu hoja)
+    Set hoja = ThisWorkbook.Sheets("Hoja1")
+    
+    ' Definir el rango de celdas que deseas formatear (por ejemplo, A1 a B5)
+    Set rangoCeldas = hoja.Range("A5:A13")
+    
+    ' Aplicar un marco completo y color de fondo a las celdas del rango
+    With rangoCeldas.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0 ' Sin color (puedes cambiarlo a un valor diferente si deseas un color específico)
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With rangoCeldas.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With rangoCeldas.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With rangoCeldas.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    
+    ' Agregar bordes internos
+    rangoCeldas.Borders(xlInsideHorizontal).LineStyle = xlContinuous ' Bordes internos horizontales
+    rangoCeldas.Borders(xlInsideVertical).LineStyle = xlContinuous ' Bordes internos verticales
+    
+    ' Establecer el color de fondo de las celdas
+    rangoCeldas.Interior.Color = RGB(0, 112, 192) ' Establecer el color de fondo
+End Sub
+
+Sub FormatearCeldasGRIS()
+    Dim hoja As Worksheet
+    Dim rangoCeldas As Range
+    
+    ' Definir la hoja de trabajo (cambia "Hoja1" al nombre de tu hoja)
+    Set hoja = ThisWorkbook.Sheets("Hoja1")
+    
+    ' Definir el rango de celdas que deseas formatear (por ejemplo, A1 a B5)
+    Set rangoCeldas = hoja.Range("C7:L7")
+    
+    ' Aplicar un marco completo y color de fondo a las celdas del rango
+    With rangoCeldas.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0 ' Sin color (puedes cambiarlo a un valor diferente si deseas un color específico)
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With rangoCeldas.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With rangoCeldas.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With rangoCeldas.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    
+    ' Agregar bordes internos
+    rangoCeldas.Borders(xlInsideHorizontal).LineStyle = xlContinuous ' Bordes internos horizontales
+    rangoCeldas.Borders(xlInsideVertical).LineStyle = xlContinuous ' Bordes internos verticales
+    
+    ' Establecer el color de fondo de las celdas
+    rangoCeldas.Interior.Color = RGB(191, 191, 191) ' Establecer el color de fondo
+End Sub
+
+Sub QuickSort(arr() As Variant, ByVal low As Long, ByVal high As Long)
+    Dim i As Long, j As Long
+    Dim pivot As Variant
+    Dim temp As Variant
+    
+    If low < high Then
+        pivot = arr(low, 1)
+        i = low
+        j = high
+        
+        Do
+            Do While arr(i, 1) < pivot
+                i = i + 1
+            Loop
+            
+            Do While arr(j, 1) > pivot
+                j = j - 1
+            Loop
+            
+            If i <= j Then
+                ' Intercambiar elementos
+                temp = arr(i, 1)
+                arr(i, 1) = arr(j, 1)
+                arr(j, 1) = temp
+                
+                i = i + 1
+                j = j - 1
+            End If
+        Loop While i <= j
+        
+        ' Llamada recursiva para las sub-arrays
+        If low < j Then QuickSort arr, low, j
+        If i < high Then QuickSort arr, i, high
+    End If
+End Sub
+
